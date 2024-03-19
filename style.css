@@ -31,9 +31,11 @@ body {
   text-align: right;
   color: white;
   font-size: 30px;
-  height: 60px;
+  height: 80px;
 
   margin-bottom: 20px;
+
+  overflow: hidden;
 }
 
 .keyboard {

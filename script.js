@@ -12,32 +12,6 @@ const calculator = {
   "%": modulo,
 };
 
-calculatorKeyboard.addEventListener("click", (event) => handleUserInput(event));
-
-function handleUserInput(event) {
-  const userInput = event.target.textContent;
-
-  if (isNumber(userInput) || userInput === ".") {
-    displayUserInput(userInput);
-  } else if (isOperator(userInput)) {
-    firstNumber = Number(calculatorDisplay.textContent);
-    operator = userInput;
-    resetCalculatorDisplayValue();
-  } else if (userInput === "=") {
-    secondNumber = Number(calculatorDisplay.textContent);
-    const result = operate(firstNumber, operator, secondNumber);
-    displayOperationResult(result);
-  } else if (userInput.toLowerCase() === "ac") {
-    resetCalculatorOperation();
-  } else if (userInput === "+ / -") {
-    switchNumberSign();
-  }
-}
-
-function operate(a, sign, b) {
-  return calculator[sign](a, b);
-}
-
 function add(a, b) {
   return a + b;
 }
@@ -51,11 +25,61 @@ function multiply(a, b) {
 }
 
 function divide(a, b) {
+  if (b === 0) {
+    alert("Don't divide by 0!");
+    return;
+  }
+
   return a / b;
 }
 
 function modulo(a, b) {
   return a % b;
+}
+
+calculatorKeyboard.addEventListener("click", (event) => handleUserInput(event));
+
+let isTyping = false;
+
+function handleUserInput(event) {
+  const userInput = event.target.textContent;
+
+  if (!isTyping) {
+    resetCalculatorDisplayValue();
+  }
+
+  if (isNumber(userInput) || userInput === ".") {
+    displayUserInput(userInput);
+    isTyping = true;
+  } else if (userInput.toLowerCase() === "ac") {
+    resetCalculatorDisplayValue();
+    resetCalculatorOperation();
+  } else if (userInput === "+ / -") {
+    switchNumberSign();
+  } else if (isOperator(userInput)) {
+    if (!firstNumber) {
+      firstNumber = Number(calculatorDisplay.textContent);
+    } else {
+      secondNumber = Number(calculatorDisplay.textContent);
+      const result = operate(firstNumber, operator, secondNumber);
+      displayOperationResult(result);
+      firstNumber = result;
+    }
+
+    operator = userInput;
+    isTyping = false;
+  } else if (userInput === "=" && operator) {
+    secondNumber = Number(calculatorDisplay.textContent);
+    const result = operate(firstNumber, operator, secondNumber);
+    displayOperationResult(result);
+    firstNumber = result;
+
+    isTyping = false;
+  }
+}
+
+function operate(a, sign, b) {
+  return calculator[sign](a, b);
 }
 
 function switchNumberSign() {
@@ -73,8 +97,6 @@ function resetCalculatorOperation() {
   firstNumber = null;
   secondNumber = null;
   operator = null;
-
-  resetCalculatorDisplayValue();
 }
 
 function isNumber(input) {
@@ -90,7 +112,18 @@ function resetCalculatorDisplayValue() {
 }
 
 function displayUserInput(input) {
-  if (input === "." && calculatorDisplay.textContent.includes(".")) return;
+  const displayText = calculatorDisplay.textContent;
+
+  if (input === "." && displayText.includes(".")) return;
+  if (input === "." && displayText.length === 0) return;
+
+  if (
+    displayText.length < 2 &&
+    displayText.split("")[0] === "0" &&
+    input !== "."
+  )
+    return;
+
   calculatorDisplay.textContent += input;
 }
 
